@@ -1,0 +1,376 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TypeSprint | Typing Speed Test</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; }
+    h1, h2, .display { font-family: 'Space Grotesk', sans-serif; }
+    .char-correct { color: #15803d; }
+    .char-wrong { color: #dc2626; background: #fee2e2; border-radius: 3px; }
+    .char-current { border-left: 2px solid #2563eb; animation: blink 1s step-end infinite; }
+    @keyframes blink { 50% { border-color: transparent; } }
+    .choice.active { background: #2563eb; color: white; border-color: #2563eb; }
+    .result-card { animation: appear .35s ease-out; }
+    @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    textarea { caret-color: #2563eb; }
+    ::selection { background: #bfdbfe; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+
+  <header class="border-b border-slate-200 bg-white">
+    <div class="max-w-6xl mx-auto px-5 py-5 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl">T</div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">TypeSprint</h1>
+          <p class="text-xs text-slate-500">Practice. Improve. Repeat.</p>
+        </div>
+      </a>
+      <span class="hidden sm:inline-flex items-center gap-2 text-sm text-slate-500">
+        <span class="w-2 h-2 rounded-full bg-green-500"></span>
+        Typing practice made simple
+      </span>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-5 py-10 md:py-14">
+    <section class="text-center max-w-2xl mx-auto mb-10">
+      <span class="inline-block bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-widest px-3 py-2 rounded-full mb-4">Typing speed challenge</span>
+      <h2 class="display text-4xl md:text-5xl font-bold tracking-tight text-slate-900">Find your typing <span class="text-blue-600">flow.</span></h2>
+      <p class="mt-4 text-slate-500 text-base md:text-lg">Test your speed, sharpen your accuracy, and become a better typist one word at a time.</p>
+    </section>
+
+    <section class="bg-white border border-slate-200 rounded-3xl shadow-sm p-5 md:p-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 mb-7">
+        <div>
+          <p class="text-xs uppercase tracking-widest font-bold text-slate-400 mb-3">Test duration</p>
+          <div class="flex gap-2" id="durationOptions">
+            <button class="choice active border border-slate-200 rounded-xl px-5 py-2.5 text-sm font-semibold transition" data-time="15">15 sec</button>
+            <button class="choice border border-slate-200 rounded-xl px-5 py-2.5 text-sm font-semibold transition" data-time="30">30 sec</button>
+            <button class="choice border border-slate-200 rounded-xl px-5 py-2.5 text-sm font-semibold transition" data-time="60">60 sec</button>
+          </div>
+        </div>
+        <div class="flex items-center gap-6 sm:gap-8">
+          <div>
+            <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Time left</p>
+            <p id="timer" class="display text-3xl font-bold text-blue-600 mt-1">15<span class="text-base font-medium text-slate-400">s</span></p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Status</p>
+            <p id="status" class="text-lg font-bold mt-1 text-slate-700">Ready</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3 mb-7">
+        <div class="rounded-2xl bg-slate-50 p-4">
+          <p class="text-xs text-slate-500 font-semibold">Speed</p>
+          <p class="display text-2xl md:text-3xl font-bold mt-2"><span id="wpm">0</span> <span class="text-xs font-medium text-slate-400">WPM</span></p>
+        </div>
+        <div class="rounded-2xl bg-slate-50 p-4">
+          <p class="text-xs text-slate-500 font-semibold">Accuracy</p>
+          <p class="display text-2xl md:text-3xl font-bold mt-2"><span id="accuracy">100</span><span class="text-lg">%</span></p>
+        </div>
+        <div class="rounded-2xl bg-slate-50 p-4">
+          <p class="text-xs text-slate-500 font-semibold">Characters</p>
+          <p class="display text-2xl md:text-3xl font-bold mt-2"><span id="characters">0</span></p>
+        </div>
+      </div>
+
+      <div class="mb-5">
+        <div class="flex justify-between items-center mb-2">
+          <p class="text-sm font-bold text-slate-700">Your practice text</p>
+          <button id="newTextBtn" class="text-sm font-semibold text-blue-600 hover:text-blue-800">New paragraph ↻</button>
+        </div>
+        <div id="passage" tabindex="0" role="button" aria-label="Click here to start typing" class="min-h-36 md:min-h-32 p-5 md:p-6 rounded-2xl bg-slate-50 border border-slate-200 text-lg md:text-xl leading-9 tracking-wide text-slate-500 cursor-text outline-none focus:ring-2 focus:ring-blue-200"></div>
+        <p class="text-xs text-slate-400 mt-3">Click the text area below and start typing. Your timer begins with your first keystroke.</p>
+      </div>
+
+      <textarea id="typingInput" rows="3" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Start typing the text above here..." class="w-full resize-none border border-slate-200 rounded-2xl p-5 text-base leading-7 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition" aria-label="Type the practice paragraph here"></textarea>
+
+      <div class="flex flex-col sm:flex-row gap-3 mt-5">
+        <button id="restartBtn" class="flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white py-3.5 px-5 font-bold transition">Restart test ↻</button>
+        <button id="resetBtn" class="rounded-xl border border-slate-200 hover:bg-slate-50 py-3.5 px-5 font-bold transition">Reset</button>
+      </div>
+      <p id="message" class="text-sm text-slate-500 mt-4 text-center" aria-live="polite">Ready when you are. Take a breath and begin!</p>
+    </section>
+
+    <section id="results" class="hidden result-card mt-6 bg-white border border-slate-200 rounded-3xl shadow-sm p-6 md:p-8">
+      <div class="text-center">
+        <div class="w-14 h-14 rounded-2xl bg-green-50 text-green-600 mx-auto flex items-center justify-center text-2xl font-bold">✓</div>
+        <h2 class="text-2xl font-bold mt-4">Test completed!</h2>
+        <p id="resultMessage" class="text-slate-500 mt-2">Great work. Keep practising!</p>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-7">
+        <div class="bg-slate-50 rounded-2xl p-4 text-center"><p class="text-sm text-slate-500">Final WPM</p><p id="finalWpm" class="display text-3xl font-bold mt-2">0</p></div>
+        <div class="bg-slate-50 rounded-2xl p-4 text-center"><p class="text-sm text-slate-500">Accuracy</p><p id="finalAccuracy" class="display text-3xl font-bold mt-2">0%</p></div>
+        <div class="bg-slate-50 rounded-2xl p-4 text-center"><p class="text-sm text-slate-500">Correct chars</p><p id="finalCorrect" class="display text-3xl font-bold mt-2">0</p></div>
+        <div class="bg-slate-50 rounded-2xl p-4 text-center"><p class="text-sm text-slate-500">Errors</p><p id="finalErrors" class="display text-3xl font-bold mt-2">0</p></div>
+      </div>
+      <button id="againBtn" class="w-full mt-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white py-3.5 font-bold transition">Try again</button>
+    </section>
+
+    <section class="grid md:grid-cols-3 gap-4 mt-8">
+      <div class="bg-white border border-slate-200 rounded-2xl p-5">
+        <div class="text-xl mb-3">⌨️</div>
+        <h3 class="font-bold">Build consistency</h3>
+        <p class="text-sm text-slate-500 mt-2 leading-6">Practise a little every day to build typing speed and confidence.</p>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-5">
+        <div class="text-xl mb-3">🎯</div>
+        <h3 class="font-bold">Focus on accuracy</h3>
+        <p class="text-sm text-slate-500 mt-2 leading-6">Correct typing matters. Try to reduce mistakes before increasing speed.</p>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-5">
+        <div class="text-xl mb-3">📈</div>
+        <h3 class="font-bold">Track your progress</h3>
+        <p class="text-sm text-slate-500 mt-2 leading-6">Repeat the test and compare your results to see how you improve.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="text-center text-sm text-slate-400 py-8 mt-4">
+    <p>© 2026 TypeSprint. Every keystroke counts.</p>
+    <p class="mt-1">Built with HTML, Tailwind CSS and JavaScript.</p>
+  </footer>
+
+  <script>
+    const paragraphs = [
+      "Learning something new every day helps us grow, improve our skills, and become more confident in everything we do.",
+      "Technology continues to change the world by connecting people, solving problems, and creating exciting opportunities.",
+      "Success does not happen overnight. Small steps, regular practice, and patience can lead to wonderful results.",
+      "A good developer writes simple code, solves problems carefully, and keeps learning from mistakes and new experiences.",
+      "Reading books, exploring ideas, and asking questions are excellent ways to develop creativity and critical thinking.",
+      "The best way to improve your typing speed is to practise regularly while maintaining a comfortable and steady rhythm.",
+      "Every great journey begins with a small step. Stay curious, believe in your progress, and keep moving forward.",
+      "A peaceful morning, a warm cup of coffee, and a clear plan can make the entire day feel more productive."
+    ];
+
+    const passage = document.getElementById("passage");
+    const input = document.getElementById("typingInput");
+    const timerEl = document.getElementById("timer");
+    const statusEl = document.getElementById("status");
+    const wpmEl = document.getElementById("wpm");
+    const accuracyEl = document.getElementById("accuracy");
+    const charactersEl = document.getElementById("characters");
+    const messageEl = document.getElementById("message");
+    const results = document.getElementById("results");
+
+    let duration = 15;
+    let timeLeft = duration;
+    let timerId = null;
+    let started = false;
+    let finished = false;
+    let targetText = "";
+    let lastParagraphIndex = -1;
+
+    function chooseParagraph() {
+      if (paragraphs.length > 1) {
+        let index;
+        do {
+          index = Math.floor(Math.random() * paragraphs.length);
+        } while (index === lastParagraphIndex);
+        lastParagraphIndex = index;
+        return paragraphs[index];
+      }
+      return paragraphs[0];
+    }
+
+    function renderPassage() {
+      const typed = input.value;
+      passage.innerHTML = "";
+
+      for (let i = 0; i < targetText.length; i++) {
+        const span = document.createElement("span");
+        span.textContent = targetText[i];
+
+        if (i < typed.length) {
+          span.className = typed[i] === targetText[i]
+            ? "char-correct"
+            : "char-wrong";
+        } else if (i === typed.length && !finished) {
+          span.className = "char-current";
+        }
+
+        passage.appendChild(span);
+      }
+    }
+
+    function getStats() {
+      const typed = input.value;
+      let correct = 0;
+      let errors = 0;
+
+      for (let i = 0; i < typed.length; i++) {
+        if (i < targetText.length && typed[i] === targetText[i]) {
+          correct++;
+        } else {
+          errors++;
+        }
+      }
+
+      const elapsed = Math.max(0, duration - timeLeft);
+      const minutes = elapsed / 60;
+      const wpm = minutes > 0 ? Math.round((correct / 5) / minutes) : 0;
+      const accuracy = typed.length > 0
+        ? Math.round((correct / typed.length) * 100)
+        : 100;
+
+      return { correct, errors, typed: typed.length, wpm, accuracy };
+    }
+
+    function updateStats() {
+      const stats = getStats();
+      wpmEl.textContent = stats.wpm;
+      accuracyEl.textContent = stats.accuracy;
+      charactersEl.textContent = stats.typed;
+      renderPassage();
+    }
+
+    function startTimer() {
+      if (started || finished) return;
+
+      started = true;
+      statusEl.textContent = "Running";
+      messageEl.textContent = "Keep going! Focus on accuracy and rhythm.";
+
+      timerId = setInterval(() => {
+        timeLeft--;
+        timerEl.innerHTML = timeLeft + '<span class="text-base font-medium text-slate-400">s</span>';
+        updateStats();
+
+        if (timeLeft <= 0) {
+          finishTest();
+        }
+      }, 1000);
+    }
+
+    function finishTest() {
+      if (finished) return;
+
+      finished = true;
+      started = false;
+      clearInterval(timerId);
+      timerId = null;
+      input.disabled = true;
+      statusEl.textContent = "Finished";
+      messageEl.textContent = "Test completed! Check your results below.";
+
+      updateStats();
+      const stats = getStats();
+
+      document.getElementById("finalWpm").textContent = stats.wpm;
+      document.getElementById("finalAccuracy").textContent = stats.accuracy + "%";
+      document.getElementById("finalCorrect").textContent = stats.correct;
+      document.getElementById("finalErrors").textContent = stats.errors;
+
+      let resultMessage = "Good effort! Practise again to improve your score.";
+      if (stats.wpm >= 60 && stats.accuracy >= 95) {
+        resultMessage = "Excellent! You are a fast and accurate typist.";
+      } else if (stats.wpm >= 40 && stats.accuracy >= 90) {
+        resultMessage = "Great job! You have built a solid typing rhythm.";
+      } else if (stats.accuracy < 80) {
+        resultMessage = "Slow down a little and focus on typing correctly.";
+      }
+
+      document.getElementById("resultMessage").textContent = resultMessage;
+      results.classList.remove("hidden");
+      results.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function resetTest(newParagraph = false) {
+      clearInterval(timerId);
+      timerId = null;
+      started = false;
+      finished = false;
+      timeLeft = duration;
+
+      if (newParagraph || !targetText) {
+        targetText = chooseParagraph();
+      }
+
+      input.value = "";
+      input.disabled = false;
+      timerEl.innerHTML = timeLeft + '<span class="text-base font-medium text-slate-400">s</span>';
+      statusEl.textContent = "Ready";
+      wpmEl.textContent = "0";
+      accuracyEl.textContent = "100";
+      charactersEl.textContent = "0";
+      messageEl.textContent = "Ready when you are. Take a breath and begin!";
+      results.classList.add("hidden");
+
+      renderPassage();
+      input.focus();
+    }
+
+    input.addEventListener("input", () => {
+      if (finished) return;
+
+      if (!started && input.value.length > 0) {
+        startTimer();
+      }
+
+      // Stop accepting extra characters beyond the target paragraph.
+      if (input.value.length > targetText.length) {
+        input.value = input.value.slice(0, targetText.length);
+      }
+
+      updateStats();
+
+      if (input.value.length === targetText.length) {
+        finishTest();
+      }
+    });
+
+    document.getElementById("durationOptions").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-time]");
+      if (!button) return;
+
+      duration = Number(button.dataset.time);
+      document.querySelectorAll(".choice").forEach((choice) => {
+        choice.classList.toggle("active", choice === button);
+      });
+
+      resetTest(false);
+    });
+
+    document.getElementById("newTextBtn").addEventListener("click", () => {
+      resetTest(true);
+    });
+
+    document.getElementById("restartBtn").addEventListener("click", () => {
+      resetTest(false);
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      resetTest(false);
+    });
+
+    document.getElementById("againBtn").addEventListener("click", () => {
+      resetTest(true);
+      document.querySelector("main").scrollIntoView({ behavior: "smooth" });
+    });
+
+    passage.addEventListener("click", () => {
+      if (!finished) input.focus();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        resetTest(false);
+      }
+    });
+
+    targetText = chooseParagraph();
+    renderPassage();
+  </script>
+</body>
+</html>
